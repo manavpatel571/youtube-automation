@@ -41,12 +41,19 @@ def upload_reel(
         console.print("[red]✗ Instagram credentials not set in config/environment![/red]")
         return False
 
-    console.print(f"[cyan]📱 Logging into Instagram as @{config.INSTAGRAM_USERNAME}...[/cyan]")
+    console.print(f"[cyan]Logging into Instagram as @{config.INSTAGRAM_USERNAME}...[/cyan]")
     
     try:
         cl = Client()
-        cl.login(config.INSTAGRAM_USERNAME, config.INSTAGRAM_PASSWORD)
         
+        # Check if user provided a manual Session ID to bypass bot protection
+        session_id = os.getenv("INSTAGRAM_SESSION_ID")
+        if session_id:
+            console.print("[dim]Using provided Session ID to bypass login...[/dim]")
+            cl.login_by_sessionid(session_id)
+        else:
+            cl.login(config.INSTAGRAM_USERNAME, config.INSTAGRAM_PASSWORD)
+            
         console.print(f"[cyan]📤 Uploading Reel to Instagram...[/cyan]")
         media = cl.clip_upload(
             str(video_path),
