@@ -27,6 +27,17 @@ def fetch_news(num_stories: int = 4) -> list[dict]:
     selected_topics = random.sample(config.NEWS_TOPICS, min(3, len(config.NEWS_TOPICS)))
     topics_str = ", ".join(selected_topics)
     
+    # Load history to prevent repeats
+    history = []
+    if config.HISTORY_FILE.exists():
+        try:
+            with open(config.HISTORY_FILE, "r") as f:
+                history = json.load(f)
+        except Exception as e:
+            console.print(f"[yellow]⚠ Could not read history file: {e}[/yellow]")
+            
+    past_headlines = "\n".join([f"- {h}" for h in history[-30:]]) if history else "No history yet."
+
     prompt = f"""You are a tech news researcher. Search for the LATEST and most impactful 
 AI and technology news from the last 3-4 days. Focus on these areas: {topics_str}.
 
@@ -35,6 +46,9 @@ Find the top {num_stories} most exciting/important stories. For each story, prov
 2. summary - 2-3 sentence summary of what happened and why it matters
 3. source - the company/organization involved (e.g., "Google", "OpenAI")
 4. importance - score from 1-10 (10 = most impactful)
+
+CRITICAL RULE: Do NOT cover any of the following stories, as we have already made videos about them recently:
+{past_headlines}
 
 IMPORTANT: Return ONLY valid JSON in this exact format, no markdown code fences:
 [
@@ -85,6 +99,18 @@ Sort by importance (highest first). Only include genuinely NEW stories from the 
     console.print(f"[green]✓ Fetched {len(news_items)} news stories[/green]")
     for i, item in enumerate(news_items, 1):
         console.print(f"  {i}. [{item.get('source', '?')}] {item.get('headline', '?')}")
+
+    # Save to history
+    new_headlines = [item.get("headline", "") for item in news_items]
+    history.extend(new_headlines)
+    # Keep only the last 50 headlines to prevent file from growing forever
+    history = history[-50:]
+    
+    try:
+        with open(config.HISTORY_FILE, "w") as f:
+            json.dump(history, f, indent=2)
+    except Exception as e:
+        console.print(f"[yellow]⚠ Could not write history file: {e}[/yellow]")
 
     return news_items
 

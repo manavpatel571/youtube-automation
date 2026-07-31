@@ -179,6 +179,12 @@ def cmd_upload(filename: str):
     try:
         response = upload_video(video_path, title, description, tags)
         
+        # Upload to Instagram
+        console.print("\n[bold]━━━ Auto-Uploading to Instagram ━━━[/bold]")
+        from pipeline.instagram_uploader import upload_reel
+        insta_caption = f"{title}\n\n{description}\n\n" + " ".join([f"#{t.replace(' ', '')}" for t in tags])
+        upload_reel(video_path, insta_caption)
+        
         # Move to uploaded directory
         uploaded_dest = config.UPLOADED_DIR / video_path.name
         shutil.copy2(video_path, uploaded_dest)

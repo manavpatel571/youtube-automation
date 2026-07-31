@@ -17,6 +17,9 @@ SERPER_API_KEY = os.getenv("SERPER_API_KEY")
 YOUTUBE_TOKEN = os.getenv("YOUTUBE_TOKEN")
 VOICE_ID = os.getenv("VOICE_ID", "mttGjNqgkgo5cciwsyoc")
 
+INSTAGRAM_USERNAME = os.getenv("INSTAGRAM_USERNAME")
+INSTAGRAM_PASSWORD = os.getenv("INSTAGRAM_PASSWORD")
+
 # ── Paths ─────────────────────────────────────────────────────────────────────
 PROJECT_ROOT = Path(__file__).parent
 OUTPUT_DIR = PROJECT_ROOT / "output"
@@ -27,6 +30,7 @@ FONTS_DIR = ASSETS_DIR / "fonts"
 CREDENTIALS_DIR = PROJECT_ROOT / "credentials"
 CLIENT_SECRET_FILE = CREDENTIALS_DIR / "client_secret.json"
 TOKEN_FILE = CREDENTIALS_DIR / "token.json"
+HISTORY_FILE = PROJECT_ROOT / "history.json"
 
 # Create directories
 for d in [DRAFTS_DIR, UPLOADED_DIR, ASSETS_DIR, FONTS_DIR, CREDENTIALS_DIR]:
