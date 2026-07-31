@@ -37,20 +37,20 @@ def generate_segment_image(
     client = genai.Client(api_key=config.GEMINI_API_KEY)
 
     # Enhance the prompt with style directives for vertical format
-    enhanced_prompt = f"""Generate a stunning vertical (9:16 portrait) background image for a YouTube Short.
+    enhanced_prompt = f"""Generate a stunning, cinematic background image for a YouTube Short.
 
-Style: Dark futuristic cyberpunk aesthetic, deep blacks and dark blues, 
-glowing neon accents (cyan, purple, pink), high-tech feel, 
-cinematic lighting, subtle particle effects.
+Style: Highly cinematic wide-angle shot, photorealistic, 8k resolution, 
+dramatic lighting, depth of field, professional cinematography, 
+dark futuristic cyberpunk aesthetic, deep blacks and dark blues with glowing accents.
 
-Subject: {prompt}
+Subject Context (Crucial): {prompt}
 
 Requirements:
-- VERTICAL orientation (portrait mode, taller than wide)
-- Leave space at center for text overlay
-- No text or words in the image
-- Dark enough for white text to be readable on top
-- High visual impact, eye-catching"""
+- The image MUST perfectly reflect the Subject Context.
+- Leave space at center for text overlay.
+- No text, words, or logos in the image.
+- Dark enough for white text to be easily readable on top.
+- High visual impact, cinematic movie frame."""
 
     import time
 
@@ -60,7 +60,8 @@ Requirements:
                 model=config.GEMINI_IMAGE_MODEL,
                 contents=enhanced_prompt,
                 config=types.GenerateContentConfig(
-                    response_modalities=["IMAGE", "TEXT"],
+                    response_modalities=["IMAGE"],
+                    aspect_ratio="9:16",
                 )
             )
 
@@ -92,7 +93,7 @@ def _generate_pollinations_image(prompt: str, output_path: Path, index: int) -> 
     import urllib.parse
     import urllib.request
     
-    clean_prompt = f"vertical 9:16 portrait photo, dark futuristic cyberpunk technology, {prompt}, 8k ultra detail"
+    clean_prompt = f"cinematic 9:16 portrait photography, highly photorealistic movie frame, dark cyberpunk, {prompt}, 8k ultra detail"
     encoded_prompt = urllib.parse.quote(clean_prompt)
     url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width={config.VIDEO_WIDTH}&height={config.VIDEO_HEIGHT}&nologo=true&seed={index + 42}"
     
