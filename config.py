@@ -14,6 +14,7 @@ load_dotenv(Path(__file__).parent / ".env")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 SERPER_API_KEY = os.getenv("SERPER_API_KEY")
+YOUTUBE_TOKEN = os.getenv("YOUTUBE_TOKEN")
 VOICE_ID = os.getenv("VOICE_ID", "mttGjNqgkgo5cciwsyoc")
 
 # ── Paths ─────────────────────────────────────────────────────────────────────

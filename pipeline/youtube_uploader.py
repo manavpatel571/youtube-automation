@@ -27,8 +27,12 @@ def _get_authenticated_service():
     
     creds = None
     
-    # Check for existing token
-    if config.TOKEN_FILE.exists():
+    # Check for existing token in environment (GitHub Actions)
+    if config.YOUTUBE_TOKEN:
+        token_info = json.loads(config.YOUTUBE_TOKEN)
+        creds = Credentials.from_authorized_user_info(token_info, SCOPES)
+    # Fallback to local file
+    elif config.TOKEN_FILE.exists():
         creds = Credentials.from_authorized_user_file(str(config.TOKEN_FILE), SCOPES)
     
     # Refresh or create new credentials
