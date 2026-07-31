@@ -61,7 +61,6 @@ Requirements:
                 contents=enhanced_prompt,
                 config=types.GenerateContentConfig(
                     response_modalities=["IMAGE"],
-                    aspect_ratio="9:16",
                 )
             )
 
@@ -70,9 +69,11 @@ Requirements:
                 if part.inline_data and part.inline_data.mime_type.startswith("image/"):
                     image_data = part.inline_data.data
                     
-                    # Open with Pillow and resize to exact video dimensions
+                    # Open with Pillow and center-crop to exact video dimensions to avoid squishing
                     img = Image.open(io.BytesIO(image_data))
-                    img = img.resize(
+                    from PIL import ImageOps
+                    img = ImageOps.fit(
+                        img,
                         (config.VIDEO_WIDTH, config.VIDEO_HEIGHT), 
                         Image.Resampling.LANCZOS
                     )
@@ -102,7 +103,8 @@ def _generate_pollinations_image(prompt: str, output_path: Path, index: int) -> 
         with urllib.request.urlopen(req, timeout=25) as response:
             image_bytes = response.read()
             img = Image.open(io.BytesIO(image_bytes))
-            img = img.resize((config.VIDEO_WIDTH, config.VIDEO_HEIGHT), Image.Resampling.LANCZOS)
+            from PIL import ImageOps
+            img = ImageOps.fit(img, (config.VIDEO_WIDTH, config.VIDEO_HEIGHT), Image.Resampling.LANCZOS)
             img.save(output_path, "PNG", quality=95)
             console.print(f"[green]  ✓ Segment {index + 1} AI image generated via Pollinations.ai[/green]")
             return output_path
