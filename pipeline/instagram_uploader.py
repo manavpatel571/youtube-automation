@@ -29,7 +29,7 @@ def upload_reel(
     try:
         from instagrapi import Client
     except ImportError:
-        console.print("[red]✗ instagrapi is not installed. Run 'pip install instagrapi'[/red]")
+        console.print("[red]✗ instagrapi is not installed. Run 'pip install .[instagram]' (or 'pip install instagrapi').[/red]")
         return False
 
     video_path = Path(video_path)
