@@ -6,10 +6,24 @@ from rich.console import Console
 
 console = Console()
 
+def upload_to_catbox(filepath: str) -> str:
+    """Uploads file to Catbox CDN to get a temporary public URL for Instagram."""
+    console.print("[cyan]☁ Uploading video to CDN (Catbox)...[/cyan]")
+    url = "https://catbox.moe/user/api.php"
+    data = {"reqtype": "fileupload"}
+    with open(filepath, "rb") as f:
+        res = requests.post(url, data=data, files={"fileToUpload": f})
+    
+    if res.status_code == 200 and res.text.startswith("https"):
+        console.print(f"[green]✓ CDN Upload successful: {res.text}[/green]")
+        return res.text
+    else:
+        console.print(f"[red]✗ CDN Upload failed: {res.text}[/red]")
+        return None
+
 def upload_reel(video_path: str, caption: str) -> bool:
     """
     Uploads a video to Instagram Reels using the Official Meta Graph API.
-    Uses the Resumable Upload API to upload the local video file.
     """
     access_token = os.getenv("META_ACCESS_TOKEN")
     ig_user_id = os.getenv("INSTAGRAM_ACCOUNT_ID")
@@ -18,16 +32,19 @@ def upload_reel(video_path: str, caption: str) -> bool:
         console.print("[red]✗ META_ACCESS_TOKEN or INSTAGRAM_ACCOUNT_ID not found in environment![/red]")
         return False
 
-    console.print(f"[cyan]📱 Initializing Instagram Reel upload via Meta Graph API...[/cyan]")
+    console.print(f"[cyan]Initializing Instagram Reel upload via Meta Graph API...[/cyan]")
     
-    file_size = os.path.getsize(video_path)
+    # STEP 1: Upload to CDN to get public URL
+    video_url = upload_to_catbox(str(video_path))
+    if not video_url:
+        return False
     
-    # STEP 1: Initialize Resumable Upload Session
+    # STEP 2: Initialize Instagram Upload Container
     init_url = f"https://graph.facebook.com/v19.0/{ig_user_id}/media"
     init_payload = {
         "access_token": access_token,
         "media_type": "REELS",
-        "upload_type": "resumable",
+        "video_url": video_url,
         "caption": caption
     }
     
@@ -40,33 +57,11 @@ def upload_reel(video_path: str, caption: str) -> bool:
     container_id = init_res["id"]
     console.print(f"[dim]Upload session started. Container ID: {container_id}[/dim]")
     
-    # STEP 2: Upload the video binary
-    console.print(f"[cyan]📤 Uploading video data ({file_size} bytes)...[/cyan]")
-    upload_url = f"https://rupload.facebook.com/ig-api-upload/v19.0/{container_id}"
-    
-    headers = {
-        "Authorization": f"OAuth {access_token}",
-        "offset": "0",
-        "file_size": str(file_size),
-        "Content-Type": "application/octet-stream"
-    }
-    
-    with open(video_path, "rb") as f:
-        video_data = f.read()
-        
-    upload_res = requests.post(upload_url, headers=headers, data=video_data)
-    
-    if upload_res.status_code != 200:
-        console.print(f"[red]✗ Failed to upload video binary: {upload_res.text}[/red]")
-        return False
-        
-    console.print("[green]✓ Video data uploaded successfully![/green]")
-    
-    # STEP 3: Check Status and Publish
+    # STEP 3: Wait for Meta servers to download and process the video
     console.print("[cyan]⏳ Waiting for Meta servers to process the video...[/cyan]")
     status_url = f"https://graph.facebook.com/v19.0/{container_id}?fields=status_code&access_token={access_token}"
     
-    max_retries = 10
+    max_retries = 15
     ready = False
     
     for _ in range(max_retries):
@@ -98,10 +93,10 @@ def upload_reel(video_path: str, caption: str) -> bool:
     publish_res = requests.post(publish_url, data=publish_payload).json()
     
     if "id" in publish_res:
-        console.print(f"[green]✓ Instagram Reel published successfully! Media ID: {publish_res['id']}[/green]")
+        console.print(f"[green]✓ Reel published successfully! ID: {publish_res['id']}[/green]")
         return True
     else:
-        console.print(f"[red]✗ Failed to publish Reel: {publish_res}[/red]")
+        console.print(f"[red]✗ Failed to publish reel: {publish_res}[/red]")
         return False
 
 if __name__ == "__main__":
