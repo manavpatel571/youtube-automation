@@ -17,8 +17,8 @@ SERPER_API_KEY = os.getenv("SERPER_API_KEY")
 YOUTUBE_TOKEN = os.getenv("YOUTUBE_TOKEN")
 VOICE_ID = os.getenv("VOICE_ID", "mttGjNqgkgo5cciwsyoc")
 
-INSTAGRAM_USERNAME = os.getenv("INSTAGRAM_USERNAME")
-INSTAGRAM_PASSWORD = os.getenv("INSTAGRAM_PASSWORD")
+META_ACCESS_TOKEN = os.getenv("META_ACCESS_TOKEN")
+INSTAGRAM_ACCOUNT_ID = os.getenv("INSTAGRAM_ACCOUNT_ID")
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 PROJECT_ROOT = Path(__file__).parent

@@ -1,76 +1,108 @@
-"""
-Step 6: Upload videos to Instagram Reels.
-Uses the unofficial instagrapi library.
-"""
-
 import os
+import time
+import requests
 from pathlib import Path
 from rich.console import Console
 
-import config
-
 console = Console()
 
-
-def upload_reel(
-    video_path: str | Path,
-    caption: str,
-) -> bool:
+def upload_reel(video_path: str, caption: str) -> bool:
     """
-    Upload a video to Instagram Reels.
-    
-    Args:
-        video_path: Path to the MP4 file.
-        caption: Caption for the Reel (including hashtags).
-        
-    Returns:
-        True if successful, False otherwise.
+    Uploads a video to Instagram Reels using the Official Meta Graph API.
+    Uses the Resumable Upload API to upload the local video file.
     """
-    try:
-        from instagrapi import Client
-    except ImportError:
-        console.print("[red]✗ instagrapi is not installed. Run 'pip install instagrapi'[/red]")
+    access_token = os.getenv("META_ACCESS_TOKEN")
+    ig_user_id = os.getenv("INSTAGRAM_ACCOUNT_ID")
+
+    if not access_token or not ig_user_id:
+        console.print("[red]✗ META_ACCESS_TOKEN or INSTAGRAM_ACCOUNT_ID not found in environment![/red]")
         return False
 
-    video_path = Path(video_path)
-    if not video_path.exists():
-        console.print(f"[red]✗ Video not found: {video_path}[/red]")
-        return False
-
-    if not config.INSTAGRAM_USERNAME or not config.INSTAGRAM_PASSWORD:
-        console.print("[red]✗ Instagram credentials not set in config/environment![/red]")
-        return False
-
-    console.print(f"[cyan]Logging into Instagram as @{config.INSTAGRAM_USERNAME}...[/cyan]")
+    console.print(f"[cyan]📱 Initializing Instagram Reel upload via Meta Graph API...[/cyan]")
     
-    try:
-        cl = Client()
+    file_size = os.path.getsize(video_path)
+    
+    # STEP 1: Initialize Resumable Upload Session
+    init_url = f"https://graph.facebook.com/v19.0/{ig_user_id}/media"
+    init_payload = {
+        "access_token": access_token,
+        "media_type": "REELS",
+        "upload_type": "resumable",
+        "caption": caption
+    }
+    
+    init_res = requests.post(init_url, data=init_payload).json()
+    
+    if "id" not in init_res:
+        console.print(f"[red]✗ Failed to initialize upload session: {init_res}[/red]")
+        return False
         
-        # Check if user provided a manual Session ID to bypass bot protection
-        session_id = os.getenv("INSTAGRAM_SESSION_ID")
-        if session_id:
-            console.print("[dim]Using provided Session ID to bypass login...[/dim]")
-            cl.login_by_sessionid(session_id)
-        else:
-            cl.login(config.INSTAGRAM_USERNAME, config.INSTAGRAM_PASSWORD)
+    container_id = init_res["id"]
+    console.print(f"[dim]Upload session started. Container ID: {container_id}[/dim]")
+    
+    # STEP 2: Upload the video binary
+    console.print(f"[cyan]📤 Uploading video data ({file_size} bytes)...[/cyan]")
+    upload_url = f"https://rupload.facebook.com/ig-api-upload/v19.0/{container_id}"
+    
+    headers = {
+        "Authorization": f"OAuth {access_token}",
+        "offset": "0",
+        "file_size": str(file_size),
+        "Content-Type": "application/octet-stream"
+    }
+    
+    with open(video_path, "rb") as f:
+        video_data = f.read()
+        
+    upload_res = requests.post(upload_url, headers=headers, data=video_data)
+    
+    if upload_res.status_code != 200:
+        console.print(f"[red]✗ Failed to upload video binary: {upload_res.text}[/red]")
+        return False
+        
+    console.print("[green]✓ Video data uploaded successfully![/green]")
+    
+    # STEP 3: Check Status and Publish
+    console.print("[cyan]⏳ Waiting for Meta servers to process the video...[/cyan]")
+    status_url = f"https://graph.facebook.com/v19.0/{container_id}?fields=status_code&access_token={access_token}"
+    
+    max_retries = 10
+    ready = False
+    
+    for _ in range(max_retries):
+        time.sleep(10)
+        status_res = requests.get(status_url).json()
+        status = status_res.get("status_code")
+        
+        console.print(f"[dim]Status: {status}[/dim]")
+        
+        if status == "FINISHED":
+            ready = True
+            break
+        elif status == "ERROR":
+            console.print("[red]✗ Meta failed to process the video.[/red]")
+            return False
             
-        console.print(f"[cyan]📤 Uploading Reel to Instagram...[/cyan]")
-        media = cl.clip_upload(
-            str(video_path),
-            caption
-        )
-        
-        console.print(f"[green]✓ Instagram Reel uploaded successfully![/green]")
-        try:
-            console.print(f"  Media ID: {media.pk}")
-        except:
-            pass
-        return True
-        
-    except Exception as e:
-        console.print(f"[red]✗ Failed to upload to Instagram: {e}[/red]")
+    if not ready:
+        console.print("[red]✗ Timed out waiting for video processing.[/red]")
         return False
-
+        
+    # STEP 4: Publish
+    console.print("[cyan]📢 Publishing Reel...[/cyan]")
+    publish_url = f"https://graph.facebook.com/v19.0/{ig_user_id}/media_publish"
+    publish_payload = {
+        "access_token": access_token,
+        "creation_id": container_id
+    }
+    
+    publish_res = requests.post(publish_url, data=publish_payload).json()
+    
+    if "id" in publish_res:
+        console.print(f"[green]✓ Instagram Reel published successfully! Media ID: {publish_res['id']}[/green]")
+        return True
+    else:
+        console.print(f"[red]✗ Failed to publish Reel: {publish_res}[/red]")
+        return False
 
 if __name__ == "__main__":
-    print("Use 'python main.py upload <filename>' to test uploads.")
+    pass
