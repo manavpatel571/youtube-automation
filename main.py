@@ -32,8 +32,10 @@ from pipeline.script_writer import generate_script
 from pipeline.voice_generator import generate_voice_for_script
 from pipeline.meme_fetcher import fetch_memes_for_script
 from pipeline.image_generator import generate_all_images
-from pipeline.video_composer import compose_video
+from pipeline.video_composer import compose_video, compose_music_video
 from pipeline.youtube_uploader import upload_video
+from pipeline.music_script_writer import generate_music_script
+from pipeline.elevenlabs_generator import generate_music
 
 console = Console()
 
@@ -130,6 +132,71 @@ def cmd_generate() -> Path | None:
         return None
 
 
+def cmd_music() -> Path | None:
+    """Run the 6 PM music video pipeline (Steps 1-5)."""
+    console.print(Panel(
+        "🎵 [bold magenta]Auto Music Video Generator[/bold magenta]\n"
+        "[dim]Fetching news/memes → Script → ElevenLabs Music → Images → Video[/dim]",
+        border_style="magenta",
+    ))
+    
+    _check_ffmpeg()
+    
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    work_dir = config.DRAFTS_DIR / timestamp
+    work_dir.mkdir(parents=True, exist_ok=True)
+    
+    try:
+        # Step 1: Fetch News
+        console.print("\n[bold]━━━ Step 1/5: Fetching Topics ━━━[/bold]")
+        news_items = fetch_news(num_stories=3)
+        with open(work_dir / "news.json", "w") as f:
+            json.dump(news_items, f, indent=2)
+            
+        # Step 2: Script
+        console.print("\n[bold]━━━ Step 2/5: Writing Music Script ━━━[/bold]")
+        script = generate_music_script(news_items)
+        with open(work_dir / "script.json", "w") as f:
+            json.dump(script, f, indent=2)
+            
+        # Step 3: ElevenLabs Music
+        console.print("\n[bold]━━━ Step 3/5: Generating Music (ElevenLabs) ━━━[/bold]")
+        audio_path = generate_music(script["song_prompt"], work_dir)
+        
+        # Step 4a: Memes
+        console.print("\n[bold]━━━ Step 4a/5: Fetching Memes ━━━[/bold]")
+        script = fetch_memes_for_script(script, work_dir)
+        
+        # Step 4b: Images
+        console.print("\n[bold]━━━ Step 4b/5: Generating Images ━━━[/bold]")
+        image_paths = generate_all_images(script["segments"], work_dir)
+        
+        # Step 5: Compose
+        console.print("\n[bold]━━━ Step 5/5: Composing Music Video ━━━[/bold]")
+        video_filename = f"music_{timestamp}.mp4"
+        video_path = work_dir / video_filename
+        
+        compose_music_video(script, image_paths, audio_path, video_path)
+        
+        console.print()
+        console.print(Panel(
+            f"[bold green]✅ Music Video Generated Successfully![/bold green]\n\n"
+            f"📁 Draft: [cyan]{video_path}[/cyan]\n"
+            f"📝 Title: {script['title']}\n\n"
+            f"[dim]Upload with:[/dim]\n"
+            f"  python main.py upload {video_filename}",
+            border_style="green",
+            title="🎉 Complete",
+        ))
+        
+        return video_path
+        
+    except Exception as e:
+        console.print(f"\n[red]✗ Pipeline failed: {e}[/red]")
+        console.print_exception()
+        return None
+
+
 def cmd_upload(filename: str):
     """Upload a draft video to YouTube."""
     console.print(Panel(
@@ -206,6 +273,14 @@ def cmd_full():
         cmd_upload(str(video_path))
 
 
+def cmd_music_full():
+    """Generate a music video and upload it immediately."""
+    video_path = cmd_music()
+    if video_path:
+        console.print("\n[bold]━━━ Auto-Uploading to YouTube ━━━[/bold]")
+        cmd_upload(str(video_path))
+
+
 def cmd_list():
     """List all pending draft videos."""
     console.print(Panel(
@@ -261,6 +336,8 @@ def main():
             "  [cyan]generate[/cyan]          Fetch news & create a video draft\n"
             "  [cyan]upload <file>[/cyan]     Upload a draft to YouTube\n"
             "  [cyan]full[/cyan]              Generate + upload in one step\n"
+            "  [cyan]music[/cyan]             Generate 6 PM music video draft\n"
+            "  [cyan]music-full[/cyan]        Generate 6 PM music video + upload\n"
             "  [cyan]list[/cyan]              Show pending drafts\n\n"
             "Usage: python main.py <command>",
             border_style="cyan",
@@ -279,11 +356,15 @@ def main():
         cmd_upload(sys.argv[2])
     elif command == "full":
         cmd_full()
+    elif command == "music":
+        cmd_music()
+    elif command == "music-full":
+        cmd_music_full()
     elif command == "list":
         cmd_list()
     else:
         console.print(f"[red]Unknown command: {command}[/red]")
-        console.print("  Use: generate | upload | full | list")
+        console.print("  Use: generate | upload | full | music | music-full | list")
 
 
 if __name__ == "__main__":

@@ -20,6 +20,8 @@ VOICE_ID = os.getenv("VOICE_ID", "mttGjNqgkgo5cciwsyoc")
 META_ACCESS_TOKEN = os.getenv("META_ACCESS_TOKEN")
 INSTAGRAM_ACCOUNT_ID = os.getenv("INSTAGRAM_ACCOUNT_ID")
 
+
+
 # ── Paths ─────────────────────────────────────────────────────────────────────
 PROJECT_ROOT = Path(__file__).parent
 OUTPUT_DIR = PROJECT_ROOT / "output"

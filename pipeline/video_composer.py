@@ -9,6 +9,8 @@ from moviepy import (
     ImageClip,
     AudioFileClip,
     concatenate_videoclips,
+    CompositeVideoClip,
+    VideoFileClip,
 )
 from rich.console import Console
 
@@ -169,3 +171,153 @@ def compose_video(
     console.print(f"[green]Video saved: {output_path} ({file_size_mb:.1f} MB)[/green]")
     
     return output_path
+
+def compose_music_video(
+    script: dict,
+    image_paths: list[Path],
+    audio_path: Path,
+    output_path: Path,
+) -> Path:
+    """Compose the 6 PM music video format with a single audio track and timed slides."""
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    
+    console.print("[cyan]Composing music video...[/cyan]")
+    
+    W, H = config.VIDEO_WIDTH, config.VIDEO_HEIGHT
+    
+    audio_clip = AudioFileClip(str(audio_path))
+    total_duration = audio_clip.duration
+    
+    segments = script.get("segments", [])
+    num_segments = len(segments)
+    
+    if num_segments == 0:
+        raise ValueError("No segments in script.")
+        
+    segment_duration = total_duration / num_segments
+    
+    segment_clips = []
+    
+    font = _get_font(90, bold=True)
+    
+    for i, segment in enumerate(segments):
+        bg_path = image_paths[i] if i < len(image_paths) else image_paths[-1]
+        text = segment.get("text", "").upper()
+        memes = segment.get("memes", [])
+        
+        try:
+            bg_base = Image.open(bg_path).convert("RGBA").resize((W, H), Image.Resampling.LANCZOS)
+        except Exception:
+            bg_base = Image.new("RGBA", (W, H), config.COLORS["bg_dark"])
+            
+        # Add dark overlay
+        overlay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        draw_ov = ImageDraw.Draw(overlay)
+        for y in range(H):
+            ratio = y / H
+            alpha = 100 if ratio > 0.5 else 50
+            draw_ov.line([(0, y), (W, y)], fill=(0, 0, 0, alpha))
+        bg_base = Image.alpha_composite(bg_base, overlay)
+        
+        # Draw lyric text
+        draw = ImageDraw.Draw(bg_base)
+        
+        # Simple text wrapping
+        words = text.split()
+        lines = []
+        current_line = []
+        for word in words:
+            current_line.append(word)
+            bbox = draw.textbbox((0, 0), " ".join(current_line), font=font)
+            if bbox[2] - bbox[0] > W - 100:
+                current_line.pop()
+                lines.append(" ".join(current_line))
+                current_line = [word]
+        if current_line:
+            lines.append(" ".join(current_line))
+            
+        y = int(H * 0.70)
+        for line in lines:
+            bbox = draw.textbbox((0, 0), line, font=font)
+            text_w = bbox[2] - bbox[0]
+            x = (W - text_w) // 2
+            
+            draw.text((x + 4, y + 4), line, font=font, fill=(0, 0, 0, 255))
+            draw.text((x, y), line, font=font, fill=(255, 100, 255, 255)) # Pink color for music video
+            
+            y += bbox[3] - bbox[1] + 20
+            
+        frame_path = output_path.parent / f"music_seg_bg_{i}.jpg"
+        bg_base.convert("RGB").save(frame_path, "JPEG", quality=90)
+        
+        bg_clip = ImageClip(str(frame_path)).with_duration(segment_duration)
+        comp_clips = [bg_clip]
+        
+        valid_memes = [m for m in memes if m.get("local_path") and Path(m.get("local_path")).exists()]
+        if valid_memes:
+            meme_dur = segment_duration / len(valid_memes)
+            for m_idx, meme in enumerate(valid_memes):
+                local_path = meme.get("local_path")
+                start_time = m_idx * meme_dur
+                
+                is_gif = local_path.lower().endswith(".gif")
+                if is_gif:
+                    try:
+                        m_clip = VideoFileClip(local_path, has_mask=True)
+                        if hasattr(m_clip, "with_loop"):
+                            m_clip = m_clip.with_loop()
+                    except Exception:
+                        m_clip = ImageClip(local_path)
+                else:
+                    m_clip = ImageClip(local_path)
+                
+                # Resize and position safely for both MoviePy v1 and v2
+                try:
+                    if hasattr(m_clip, 'resized'):
+                        m_clip = m_clip.resized(width=800)
+                        if m_clip.h > 800:
+                            m_clip = m_clip.resized(height=800)
+                    else:
+                        m_clip = m_clip.resize(width=800)
+                        if m_clip.h > 800:
+                            m_clip = m_clip.resize(height=800)
+                except Exception:
+                    pass
+                
+                mx = (W - m_clip.w) // 2
+                my = int(H * 0.15)
+                
+                # In MoviePy v1 it's set_position, in v2 it's with_position
+                if hasattr(m_clip, 'with_position'):
+                    m_clip = m_clip.with_position((mx, my)).with_start(start_time).with_duration(meme_dur)
+                else:
+                    m_clip = m_clip.set_position((mx, my)).set_start(start_time).set_duration(meme_dur)
+                    
+                comp_clips.append(m_clip)
+        
+        segment_clip = CompositeVideoClip(comp_clips, size=(W, H)).with_duration(segment_duration)
+        segment_clips.append(segment_clip)
+        
+    final_video = concatenate_videoclips(segment_clips, method="compose")
+    final_video = final_video.with_audio(audio_clip)
+    
+    console.print("  Encoding music video...")
+    final_video.write_videofile(
+        str(output_path),
+        fps=config.VIDEO_FPS,
+        codec="libx264",
+        audio_codec="aac",
+        preset="ultrafast",
+        threads=4,
+        logger=None,
+    )
+    
+    final_video.close()
+    audio_clip.close()
+    
+    file_size_mb = output_path.stat().st_size / (1024 * 1024)
+    console.print(f"[green]Music Video saved: {output_path} ({file_size_mb:.1f} MB)[/green]")
+    
+    return output_path
+

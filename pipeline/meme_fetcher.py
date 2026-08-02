@@ -65,12 +65,21 @@ def fetch_memes_for_script(script: dict, drafts_dir: Path) -> dict:
                         img_req = requests.get(target_url, timeout=15, headers={"User-Agent": "Mozilla/5.0"})
                         img_req.raise_for_status()
                         
-                        img = Image.open(io.BytesIO(img_req.content))
-                        # Convert to RGBA if necessary
-                        if img.mode != "RGBA":
-                            img = img.convert("RGBA")
-                        img.thumbnail((600, 600))
-                        img.save(img_path, "PNG")
+                        content_type = img_req.headers.get("Content-Type", "")
+                        is_gif = "gif" in content_type.lower() or target_url.lower().endswith(".gif")
+                        
+                        if is_gif:
+                            img_filename = img_filename.replace(".png", ".gif")
+                            img_path = drafts_dir / img_filename
+                            with open(img_path, "wb") as f:
+                                f.write(img_req.content)
+                        else:
+                            img = Image.open(io.BytesIO(img_req.content))
+                            # Convert to RGBA if necessary
+                            if img.mode != "RGBA":
+                                img = img.convert("RGBA")
+                            img.thumbnail((600, 600))
+                            img.save(img_path, "PNG")
                         
                         console.print(f"[green]    ✓ Downloaded {img_filename}[/green]")
                         image_item["local_path"] = str(img_path)
