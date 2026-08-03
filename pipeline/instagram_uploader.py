@@ -7,16 +7,18 @@ from rich.console import Console
 console = Console()
 
 def upload_to_cdn(filepath: str) -> str:
-    """Uploads file to catbox.moe to get a temporary public URL for Instagram."""
-    console.print("[cyan]☁ Uploading video to CDN (catbox.moe)...[/cyan]")
-    url = "https://catbox.moe/user/api.php"
+    """Uploads file to uguu.se to get a temporary public URL for Instagram."""
+    console.print("[cyan]☁ Uploading video to CDN (uguu.se)...[/cyan]")
+    url = "https://uguu.se/upload.php"
     with open(filepath, "rb") as f:
-        res = requests.post(url, data={"reqtype": "fileupload"}, files={"fileToUpload": f})
+        res = requests.post(url, files={"files[]": (Path(filepath).name, f, "video/mp4")})
     
     if res.status_code == 200:
-        raw_url = res.text.strip()
-        console.print(f"[green]✓ CDN Upload successful: {raw_url}[/green]")
-        return raw_url
+        data = res.json()
+        if data.get("success") and data.get("files"):
+            raw_url = data["files"][0]["url"]
+            console.print(f"[green]✓ CDN Upload successful: {raw_url}[/green]")
+            return raw_url
             
     console.print(f"[red]✗ CDN Upload failed: {res.text}[/red]")
     return None
