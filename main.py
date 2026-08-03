@@ -129,7 +129,7 @@ def cmd_generate() -> Path | None:
     except Exception as e:
         console.print(f"\n[red]✗ Pipeline failed: {e}[/red]")
         console.print_exception()
-        return None
+        sys.exit(1)
 
 
 def cmd_music() -> Path | None:
@@ -194,7 +194,7 @@ def cmd_music() -> Path | None:
     except Exception as e:
         console.print(f"\n[red]✗ Pipeline failed: {e}[/red]")
         console.print_exception()
-        return None
+        sys.exit(1)
 
 
 def cmd_upload(filename: str):
@@ -263,6 +263,7 @@ def cmd_upload(filename: str):
     except Exception as e:
         console.print(f"[red]✗ Upload failed: {e}[/red]")
         console.print_exception()
+        sys.exit(1)
 
 
 def cmd_full():
