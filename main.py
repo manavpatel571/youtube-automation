@@ -250,7 +250,9 @@ def cmd_upload(filename: str):
         console.print("\n[bold]━━━ Auto-Uploading to Instagram ━━━[/bold]")
         from pipeline.instagram_uploader import upload_reel
         insta_caption = f"{title}\n\n{description}\n\n" + " ".join([f"#{t.replace(' ', '')}" for t in tags])
-        upload_reel(video_path, insta_caption)
+        success = upload_reel(video_path, insta_caption)
+        if not success:
+            raise Exception("Instagram upload failed (Check CDN or API Token)")
         
         # Move to uploaded directory
         uploaded_dest = config.UPLOADED_DIR / video_path.name
