@@ -7,20 +7,16 @@ from rich.console import Console
 console = Console()
 
 def upload_to_cdn(filepath: str) -> str:
-    """Uploads file to tmpfiles.org to get a temporary public URL for Instagram."""
-    console.print("[cyan]☁ Uploading video to CDN (tmpfiles.org)...[/cyan]")
-    url = "https://tmpfiles.org/api/v1/upload"
+    """Uploads file to catbox.moe to get a temporary public URL for Instagram."""
+    console.print("[cyan]☁ Uploading video to CDN (catbox.moe)...[/cyan]")
+    url = "https://catbox.moe/user/api.php"
     with open(filepath, "rb") as f:
-        res = requests.post(url, files={"file": f})
+        res = requests.post(url, data={"reqtype": "fileupload"}, files={"fileToUpload": f})
     
     if res.status_code == 200:
-        data = res.json()
-        if "data" in data and "url" in data["data"]:
-            # Convert viewer URL to direct download URL (add /dl/)
-            # e.g. https://tmpfiles.org/123/file.mp4 -> https://tmpfiles.org/dl/123/file.mp4
-            raw_url = data["data"]["url"].replace("tmpfiles.org/", "tmpfiles.org/dl/")
-            console.print(f"[green]✓ CDN Upload successful: {raw_url}[/green]")
-            return raw_url
+        raw_url = res.text.strip()
+        console.print(f"[green]✓ CDN Upload successful: {raw_url}[/green]")
+        return raw_url
             
     console.print(f"[red]✗ CDN Upload failed: {res.text}[/red]")
     return None
@@ -79,7 +75,7 @@ def upload_reel(video_path: str, caption: str) -> bool:
             ready = True
             break
         elif status == "ERROR":
-            console.print("[red]✗ Meta failed to process the video.[/red]")
+            console.print(f"[red]✗ Meta failed to process the video. Full response: {status_res}[/red]")
             return False
             
     if not ready:
