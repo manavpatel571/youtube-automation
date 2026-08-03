@@ -30,9 +30,12 @@ def generate_voice_for_script(script: dict, drafts_dir: Path) -> dict:
             
         output_path = drafts_dir / f"segment_{i}_voice.mp3"
         
+        speaker = segment.get("speaker", "main")
+        current_voice_id = config.GIRL_VOICE_ID if speaker == "girl" else config.VOICE_ID
+        
         audio = client.text_to_speech.convert(
             text=text,
-            voice_id=config.VOICE_ID,
+            voice_id=current_voice_id,
             model_id=config.ELEVENLABS_MODEL,
             output_format="mp3_44100_128",
         )

@@ -54,14 +54,14 @@ REQUIREMENTS:
    - "AI just changed FOREVER. Here's why."
    - "This changes everything about AI."
 
-2. BODY (exactly 3 news segments, ~8 seconds each): 
-   - Fast-paced, conversational, energetic
-   - Use simple language — explain like talking to a friend
-   - Add excitement words: "insane", "game-changer", "wild", "massive"
-   - Keep each segment to 1-2 SHORT sentences max — no filler
+2. BODY (exactly 4-5 news segments, ~6-8 seconds each): 
+   - Feature a two-person banter! We have a "main" anchor (male) and a "girl" co-host.
+   - The "main" anchor introduces the tech news seriously but energetically.
+   - The "girl" co-host chimes in with funny, relatable meme commentary, reactions, or jokes.
+   - Keep each segment to 1-2 SHORT sentences max — no filler.
 
 3. OUTRO (last 3 seconds):
-   - End with a call to action: "Follow for daily AI drops!" or similar
+   - End with a call to action from either speaker: "Follow for daily AI drops!" or similar
 
 4. For each segment, also provide:
    - image_prompt: A detailed prompt for generating a futuristic/tech background image 
@@ -73,8 +73,9 @@ REQUIREMENTS:
 
 CRITICAL CONSTRAINTS:
 - The full_script MUST be 80-100 words MAXIMUM. Count carefully!
-- You MUST have exactly 4 segments (1 hook + 3 news). No more, no less.
-- Each segment text should be 15-25 words max.
+- You MUST have exactly 4-6 segments total.
+- Each segment must have a `speaker` field which is strictly either "main" or "girl". Make sure they alternate or have a natural flow!
+- Each segment text should be 10-20 words max.
 
 IMPORTANT: Return ONLY valid JSON in this exact format, no markdown fences:
 {{
@@ -84,6 +85,7 @@ IMPORTANT: Return ONLY valid JSON in this exact format, no markdown fences:
     "full_script": "complete voiceover text as one paragraph",
     "segments": [
         {{
+            "speaker": "main",
             "text": "voiceover text for this part",
             "image_prompt": "detailed image generation prompt",
             "pop_images": [

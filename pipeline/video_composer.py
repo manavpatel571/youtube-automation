@@ -70,6 +70,9 @@ def compose_video(
         if not audio_path or duration <= 0 or not word_timings:
             continue
             
+        speaker = segment.get("speaker", "main")
+        text_color = (255, 100, 255, 255) if speaker == "girl" else (255, 215, 0, 255)
+            
         # Load background
         try:
             bg_base = Image.open(bg_path).convert("RGBA").resize((W, H), Image.Resampling.LANCZOS)
@@ -85,7 +88,7 @@ def compose_video(
             draw_ov.line([(0, y), (W, y)], fill=(0, 0, 0, alpha))
         bg_base = Image.alpha_composite(bg_base, overlay)
         
-        font = _get_font(80, bold=True)
+        font = _get_font(120, bold=True)
         
         # Load memes
         active_memes = []
@@ -96,14 +99,15 @@ def compose_video(
                 meme_img = Image.open(local_path).convert("RGBA")
                 meme_img.thumbnail((900, 900))
                 
-                # Find start idx
+                # Find start idx using the first word of the trigger phrase
+                first_trigger_word = trigger.split()[0] if trigger else ""
                 start_idx = 0
                 for w_idx, w_info in enumerate(word_timings):
-                    if trigger in w_info["clean_word"]:
+                    if first_trigger_word and first_trigger_word in w_info["clean_word"]:
                         start_idx = w_idx
                         break
                 active_memes.append({
-                    "img": meme_img,
+                    "local_path": local_path,
                     "start_idx": start_idx
                 })
         
@@ -114,14 +118,6 @@ def compose_video(
             
             frame_img = bg_base.copy()
             
-            # Draw memes that should be active
-            for meme in active_memes:
-                if w_idx >= meme["start_idx"]:
-                    meme_img = meme["img"]
-                    mx = (W - meme_img.width) // 2
-                    my = int(H * 0.2)
-                    frame_img.alpha_composite(meme_img, (mx, my))
-                    
             # Draw text
             draw = ImageDraw.Draw(frame_img)
             bbox = draw.textbbox((0, 0), word_str, font=font)
@@ -131,7 +127,7 @@ def compose_video(
             
             # Shadow and text
             draw.text((x + 4, y + 4), word_str, font=font, fill=(0, 0, 0, 255))
-            draw.text((x, y), word_str, font=font, fill=(255, 215, 0, 255))  # Gold color
+            draw.text((x, y), word_str, font=font, fill=text_color)
             
             # Save frame
             frame_path = frames_dir / f"seg_{i}_word_{w_idx}.jpg"
@@ -145,6 +141,48 @@ def compose_video(
         segment_video = concatenate_videoclips(word_clips, method="chain")
         audio_clip = AudioFileClip(audio_path)
         segment_video = segment_video.with_audio(audio_clip)
+        
+        # Composite memes on top so GIFs can animate
+        comp_clips = [segment_video]
+        for meme in active_memes:
+            local_path = meme["local_path"]
+            start_time = word_timings[meme["start_idx"]]["start"]
+            meme_dur = duration - start_time
+            
+            is_gif = local_path.lower().endswith(".gif")
+            if is_gif:
+                try:
+                    m_clip = VideoFileClip(local_path, has_mask=True)
+                    if hasattr(m_clip, "with_loop"):
+                        m_clip = m_clip.with_loop()
+                except Exception:
+                    m_clip = ImageClip(local_path)
+            else:
+                m_clip = ImageClip(local_path)
+            
+            try:
+                if hasattr(m_clip, 'resized'):
+                    m_clip = m_clip.resized(width=800)
+                    if m_clip.h > 800:
+                        m_clip = m_clip.resized(height=800)
+                else:
+                    m_clip = m_clip.resize(width=800)
+                    if m_clip.h > 800:
+                        m_clip = m_clip.resize(height=800)
+            except Exception:
+                pass
+            
+            mx = (W - m_clip.w) // 2
+            my = int(H * 0.15)
+            
+            if hasattr(m_clip, 'with_position'):
+                m_clip = m_clip.with_position((mx, my)).with_start(start_time).with_duration(meme_dur)
+            else:
+                m_clip = m_clip.set_position((mx, my)).set_start(start_time).set_duration(meme_dur)
+                
+            comp_clips.append(m_clip)
+            
+        segment_video = CompositeVideoClip(comp_clips, size=(W, H)).with_duration(duration)
         
         segment_clips.append(segment_video)
         console.print(f"  Segment {i+1} prepared")
