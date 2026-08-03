@@ -6,20 +6,24 @@ from rich.console import Console
 
 console = Console()
 
-def upload_to_catbox(filepath: str) -> str:
-    """Uploads file to Catbox CDN to get a temporary public URL for Instagram."""
-    console.print("[cyan]☁ Uploading video to CDN (Catbox)...[/cyan]")
-    url = "https://catbox.moe/user/api.php"
-    data = {"reqtype": "fileupload"}
+def upload_to_cdn(filepath: str) -> str:
+    """Uploads file to tmpfiles.org to get a temporary public URL for Instagram."""
+    console.print("[cyan]☁ Uploading video to CDN (tmpfiles.org)...[/cyan]")
+    url = "https://tmpfiles.org/api/v1/upload"
     with open(filepath, "rb") as f:
-        res = requests.post(url, data=data, files={"fileToUpload": f})
+        res = requests.post(url, files={"file": f})
     
-    if res.status_code == 200 and res.text.startswith("https"):
-        console.print(f"[green]✓ CDN Upload successful: {res.text}[/green]")
-        return res.text
-    else:
-        console.print(f"[red]✗ CDN Upload failed: {res.text}[/red]")
-        return None
+    if res.status_code == 200:
+        data = res.json()
+        if "data" in data and "url" in data["data"]:
+            # Convert viewer URL to direct download URL (add /dl/)
+            # e.g. https://tmpfiles.org/123/file.mp4 -> https://tmpfiles.org/dl/123/file.mp4
+            raw_url = data["data"]["url"].replace("tmpfiles.org/", "tmpfiles.org/dl/")
+            console.print(f"[green]✓ CDN Upload successful: {raw_url}[/green]")
+            return raw_url
+            
+    console.print(f"[red]✗ CDN Upload failed: {res.text}[/red]")
+    return None
 
 def upload_reel(video_path: str, caption: str) -> bool:
     """
@@ -35,7 +39,7 @@ def upload_reel(video_path: str, caption: str) -> bool:
     console.print(f"[cyan]Initializing Instagram Reel upload via Meta Graph API...[/cyan]")
     
     # STEP 1: Upload to CDN to get public URL
-    video_url = upload_to_catbox(str(video_path))
+    video_url = upload_to_cdn(str(video_path))
     if not video_url:
         return False
     
