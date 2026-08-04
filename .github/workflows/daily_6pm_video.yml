@@ -2,7 +2,7 @@ name: 6 PM YouTube Music Video Auto-Uploader
 
 on:
   schedule:
-    - cron: '30 12 * * *'  # Runs every day at 6:00 PM IST (12:30 PM UTC)
+    - cron: '37 12 * * *'  # Runs every day at 6:07 PM IST (12:37 PM UTC)
   workflow_dispatch:      # Allows manual trigger from GitHub UI
 
 jobs:
