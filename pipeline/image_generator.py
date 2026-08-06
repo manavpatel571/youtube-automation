@@ -143,13 +143,14 @@ def _generate_fallback_image(output_path: Path, index: int) -> Path:
     return output_path
 
 
-def generate_all_images(segments: list[dict], work_dir: Path) -> list[Path]:
+def generate_all_images(segments: list[dict], work_dir: Path, max_images: int = 3) -> list[Path]:
     """
-    Generate images for all segments.
+    Generate images for segments, capped at max_images to save API cost.
     
     Args:
         segments: List of segment dicts (each has 'image_prompt').
         work_dir: Directory to save images in.
+        max_images: Maximum number of AI background images to generate (default: 3).
         
     Returns:
         List of paths to generated images.
@@ -157,18 +158,23 @@ def generate_all_images(segments: list[dict], work_dir: Path) -> list[Path]:
     images_dir = work_dir / "images"
     images_dir.mkdir(parents=True, exist_ok=True)
     
-    console.print(f"[cyan]🎨 Generating {len(segments)} background images...[/cyan]")
+    num_to_generate = min(len(segments), max_images)
+    console.print(f"[cyan]🎨 Generating {num_to_generate} background images (capped at {max_images} to save API cost)...[/cyan]")
     
     image_paths = []
-    for i, segment in enumerate(segments):
+    for i in range(num_to_generate):
+        segment = segments[i]
         prompt = segment.get("image_prompt", "futuristic AI technology abstract background")
         output_path = images_dir / f"segment_{i:02d}.png"
         
         path = generate_segment_image(prompt, output_path, index=i)
         image_paths.append(path)
     
-    console.print(f"[green]✓ All {len(image_paths)} images generated[/green]")
-    return image_paths
+    # Fill remaining segments by cycling generated images
+    full_image_paths = [image_paths[i % len(image_paths)] for i in range(len(segments))]
+    
+    console.print(f"[green]✓ {len(image_paths)} AI images generated and reused across {len(segments)} segments[/green]")
+    return full_image_paths
 
 
 if __name__ == "__main__":

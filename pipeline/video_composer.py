@@ -61,7 +61,7 @@ def compose_video(
     segment_clips = []
     
     for i, segment in enumerate(script.get("segments", [])):
-        bg_path = image_paths[i] if i < len(image_paths) else image_paths[-1]
+        bg_path = image_paths[i % len(image_paths)]
         audio_path = segment.get("audio_path")
         duration = segment.get("duration", 0)
         word_timings = segment.get("word_timings", [])
@@ -240,7 +240,7 @@ def compose_music_video(
     font = _get_font(90, bold=True)
     
     for i, segment in enumerate(segments):
-        bg_path = image_paths[i] if i < len(image_paths) else image_paths[-1]
+        bg_path = image_paths[i % len(image_paths)]
         text = segment.get("text", "").upper()
         memes = segment.get("memes", [])
         
