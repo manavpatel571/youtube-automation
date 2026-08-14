@@ -33,6 +33,14 @@ jobs:
           pip install .
           pip install instagrapi
 
+      - name: Cache/Restore Draft Videos
+        uses: actions/cache@v4
+        with:
+          path: output/drafts/
+          key: draft-video-${{ github.run_id }}
+          restore-keys: |
+            draft-video-
+
       - name: Generate and Upload Video
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}

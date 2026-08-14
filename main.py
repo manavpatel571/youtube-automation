@@ -197,29 +197,48 @@ def cmd_music() -> Path | None:
         sys.exit(1)
 
 
+def get_pending_draft() -> Path | None:
+    """Check if there is an unuploaded draft video from a previous failed run."""
+    if not config.DRAFTS_DIR.exists():
+        return None
+        
+    for draft_dir in sorted(config.DRAFTS_DIR.iterdir(), reverse=True):
+        if draft_dir.is_dir():
+            for mp4 in draft_dir.glob("*.mp4"):
+                status_file = draft_dir / "upload_status.json"
+                status = {"youtube": False, "instagram": False}
+                if status_file.exists():
+                    try:
+                        with open(status_file) as f:
+                            status = json.load(f)
+                    except Exception:
+                        pass
+                
+                # If not fully uploaded to both platforms, return this draft
+                if not (status.get("youtube") and status.get("instagram")):
+                    return mp4
+    return None
+
+
 def cmd_upload(filename: str):
-    """Upload a draft video to YouTube."""
+    """Upload a draft video to YouTube and Instagram with resumption support."""
     console.print(Panel(
-        f"📤 [bold cyan]YouTube Upload[/bold cyan]\n"
+        f"📤 [bold cyan]Auto-Uploading Video[/bold cyan]\n"
         f"[dim]File: {filename}[/dim]",
         border_style="cyan",
     ))
     
     # Find the video file
     video_path = None
-    
-    # Check if it's a full path
     if Path(filename).exists():
         video_path = Path(filename)
     else:
-        # Search in drafts directories
         for draft_dir in sorted(config.DRAFTS_DIR.iterdir(), reverse=True):
             if draft_dir.is_dir():
                 candidate = draft_dir / filename
                 if candidate.exists():
                     video_path = candidate
                     break
-                # Also try matching without exact name
                 for f in draft_dir.glob("*.mp4"):
                     if filename in f.name:
                         video_path = f
@@ -230,7 +249,16 @@ def cmd_upload(filename: str):
         console.print("  Use 'python main.py list' to see available drafts.")
         return
     
-    # Load the script metadata if available
+    status_file = video_path.parent / "upload_status.json"
+    status = {"youtube": False, "instagram": False}
+    if status_file.exists():
+        try:
+            with open(status_file) as f:
+                status = json.load(f)
+        except Exception:
+            pass
+    
+    # Load metadata
     script_file = video_path.parent / "script.json"
     if script_file.exists():
         with open(script_file) as f:
@@ -244,21 +272,38 @@ def cmd_upload(filename: str):
         tags = ["AI", "tech", "artificial intelligence", "Shorts"]
     
     try:
-        response = upload_video(video_path, title, description, tags)
+        # YouTube Upload
+        if not status.get("youtube"):
+            console.print("\n[bold]━━━ Auto-Uploading to YouTube ━━━[/bold]")
+            response = upload_video(video_path, title, description, tags)
+            status["youtube"] = True
+            with open(status_file, "w") as f:
+                json.dump(status, f, indent=2)
+        else:
+            console.print("\n[yellow]⏩ YouTube upload already completed for this draft. Skipping.[/yellow]")
         
-        # Upload to Instagram
-        console.print("\n[bold]━━━ Auto-Uploading to Instagram ━━━[/bold]")
-        from pipeline.instagram_uploader import upload_reel
-        insta_caption = f"{title}\n\n{description}\n\n" + " ".join([f"#{t.replace(' ', '')}" for t in tags])
-        success = upload_reel(video_path, insta_caption)
-        if not success:
-            raise Exception("Instagram upload failed (Check CDN or API Token)")
+        # Instagram Upload
+        if not status.get("instagram"):
+            console.print("\n[bold]━━━ Auto-Uploading to Instagram ━━━[/bold]")
+            from pipeline.instagram_uploader import upload_reel
+            insta_caption = f"{title}\n\n{description}\n\n" + " ".join([f"#{t.replace(' ', '')}" for t in tags])
+            success = upload_reel(video_path, insta_caption)
+            if not success:
+                raise Exception("Instagram upload failed (Check CDN or API Token)")
+            status["instagram"] = True
+            with open(status_file, "w") as f:
+                json.dump(status, f, indent=2)
+        else:
+            console.print("\n[yellow]⏩ Instagram upload already completed for this draft. Skipping.[/yellow]")
         
-        # Move to uploaded directory
+        # Move to uploaded directory & cleanup draft folder
         uploaded_dest = config.UPLOADED_DIR / video_path.name
         shutil.copy2(video_path, uploaded_dest)
         console.print(f"[dim]  Copied to: {uploaded_dest}[/dim]")
         
+        if video_path.parent.exists() and video_path.parent != config.DRAFTS_DIR:
+            shutil.rmtree(video_path.parent, ignore_errors=True)
+            
     except FileNotFoundError as e:
         console.print(f"[red]✗ {e}[/red]")
         console.print("  Run the YouTube setup first: see SETUP_YOUTUBE.md")
@@ -269,18 +314,30 @@ def cmd_upload(filename: str):
 
 
 def cmd_full():
-    """Generate a video and upload it immediately."""
+    """Generate a video and upload it immediately (with pending draft resumption)."""
+    pending = get_pending_draft()
+    if pending:
+        console.print(f"\n[bold yellow]📦 Resuming pending unuploaded draft: {pending.name}[/bold yellow]")
+        console.print("[dim]Uploading existing video draft instead of generating a new one...[/dim]\n")
+        cmd_upload(str(pending))
+        return
+
     video_path = cmd_generate()
     if video_path:
-        console.print("\n[bold]━━━ Auto-Uploading to YouTube ━━━[/bold]")
         cmd_upload(str(video_path))
 
 
 def cmd_music_full():
-    """Generate a music video and upload it immediately."""
+    """Generate a music video and upload it immediately (with pending draft resumption)."""
+    pending = get_pending_draft()
+    if pending:
+        console.print(f"\n[bold yellow]📦 Resuming pending unuploaded draft: {pending.name}[/bold yellow]")
+        console.print("[dim]Uploading existing music video draft instead of generating a new one...[/dim]\n")
+        cmd_upload(str(pending))
+        return
+
     video_path = cmd_music()
     if video_path:
-        console.print("\n[bold]━━━ Auto-Uploading to YouTube ━━━[/bold]")
         cmd_upload(str(video_path))
 
 
