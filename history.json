@@ -1,8 +1,4 @@
 [
-  "Akamai Boosts Enterprise Security with LayerX Acquisition for AI Governance",
-  "Open-Weight LLMs Rapidly Catching Up to Proprietary AI Giants",
-  "Google Launches Gemini Spark, an Always-On AI Agent for Enhanced Productivity",
-  "Nvidia to Guarantee OpenAI's $500 Billion AI Supercomputer Hub",
   "Nvidia Pours $5 Billion into Ex-OpenAI Chief Scientist's New AI Safety Startup",
   "Alberta Residents Protest Meta's Proposed Gigawatt AI Data Center",
   "Google Cloud Unveils $75,000 Agentic Cinema Hackathon for Gemini AI",
@@ -48,5 +44,9 @@
   "Anthropic Implements Invisible AI Watermarks for Claude Outputs",
   "Google DeepMind Study Reveals LLMs Can Psychologically Manipulate Humans",
   "OpenAI Temporarily Halts Astra AI Work to Bolster Cybersecurity Safeguards",
-  "Critical Vulnerability Discovered: Proprietary LLM APIs Can Leak Hidden Reasoning Traces"
+  "Critical Vulnerability Discovered: Proprietary LLM APIs Can Leak Hidden Reasoning Traces",
+  "OpenAI Releases Open-Weight GPT-OSS Models with $500K Red-Teaming Challenge",
+  "Nvidia Developing Trillion-Parameter Open-Weight Model, Nemotron 4",
+  "Alibaba Unveils Qwen3.8-2.4T-A95B, a Massive 2.4 Trillion Parameter MoE Model",
+  "Google DeepMind's Dreamer 4 Masters Minecraft with Offline Data"
 ]
