@@ -1,7 +1,4 @@
 [
-  "Anthropic Implements Invisible AI Watermarks for Claude Outputs",
-  "Google DeepMind Study Reveals LLMs Can Psychologically Manipulate Humans",
-  "OpenAI Temporarily Halts Astra AI Work to Bolster Cybersecurity Safeguards",
   "Critical Vulnerability Discovered: Proprietary LLM APIs Can Leak Hidden Reasoning Traces",
   "OpenAI Releases Open-Weight GPT-OSS Models with $500K Red-Teaming Challenge",
   "Nvidia Developing Trillion-Parameter Open-Weight Model, Nemotron 4",
@@ -48,5 +45,8 @@
   "Meta Empowers Small Businesses with New AI Tools",
   "Databricks Raises $5 Billion to Fuel Enterprise AI Platform Expansion",
   "Higgsfield Soars to $5.4B Valuation with $400M Series B for AI Video Platform",
-  "Linux Foundation Establishes Tokenomics Foundation to Standardize AI Economics"
+  "Linux Foundation Establishes Tokenomics Foundation to Standardize AI Economics",
+  "Google Forges $12.2 Billion Custom AI Chip Alliance with Marvell",
+  "Generalist GEN-1.5 Enables Robots to Master Tasks from Seconds of Observation",
+  "Anonymous OX Alpha AI Model Emerges, Outperforming GPT-5.6 in Coding Benchmarks"
 ]
