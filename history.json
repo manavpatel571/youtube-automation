@@ -1,8 +1,4 @@
 [
-  "Critical Vulnerability Discovered: Proprietary LLM APIs Can Leak Hidden Reasoning Traces",
-  "OpenAI Releases Open-Weight GPT-OSS Models with $500K Red-Teaming Challenge",
-  "Nvidia Developing Trillion-Parameter Open-Weight Model, Nemotron 4",
-  "Alibaba Unveils Qwen3.8-2.4T-A95B, a Massive 2.4 Trillion Parameter MoE Model",
   "Google DeepMind's Dreamer 4 Masters Minecraft with Offline Data",
   "AI Startup River AI Secures Staggering $1.1 Billion Seed Round",
   "Cognition AI's Valuation Soars to $40 Billion in New Funding Talks",
@@ -48,5 +44,9 @@
   "Linux Foundation Establishes Tokenomics Foundation to Standardize AI Economics",
   "Google Forges $12.2 Billion Custom AI Chip Alliance with Marvell",
   "Generalist GEN-1.5 Enables Robots to Master Tasks from Seconds of Observation",
-  "Anonymous OX Alpha AI Model Emerges, Outperforming GPT-5.6 in Coding Benchmarks"
+  "Anonymous OX Alpha AI Model Emerges, Outperforming GPT-5.6 in Coding Benchmarks",
+  "Alibaba Unleashes Qwen3.8-Max: A 2.4 Trillion Parameter Open-Weight AI Model",
+  "OpenAI Urges Stricter AI Safety Regulations, Citing Cyber Risks",
+  "Z.AI's GLM-5.3 Excels at Software Vulnerability Discovery, Boosting Open-Weight AI Security Tools",
+  "Hugging Face Report: Chinese Labs Lead in Large Open-Source AI Model Development"
 ]
