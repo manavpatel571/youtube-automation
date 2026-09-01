@@ -1,7 +1,4 @@
 [
-  "Nvidia Seals $6 Billion Licensing Deal with AI Startup Poolside",
-  "Humanoid Robot Maker Unitree Rockets to $50 Billion Valuation in IPO Debut",
-  "Stripe Acquires AI Model Routing Platform OpenRouter in Multi-Billion Dollar Deal",
   "Nvidia Reportedly Explores Over $30 Billion Acquisition of AI Search Startup Perplexity",
   "OpenAI Forges Major Data Center Alliances with Oracle and SoftBank",
   "Alibaba Challenges Frontier Models with New Qwen 3-Max LLM, Boosts Industrial AI with Nvidia",
@@ -48,5 +45,8 @@
   "OpenAI Unveils Custom 'Jalape\u00f1o' Chip, Boosting AI Inference Performance",
   "NVIDIA AVO Agent Achieves Breakthrough in Claude Opus 5 Performance on AGI Benchmark",
   "Chinese Open-Source AI Models Surge in Popularity, Reshaping Global Landscape",
-  "Anthropic Secures $45 Billion Deal for Massive AI Computing Power"
+  "Anthropic Secures $45 Billion Deal for Massive AI Computing Power",
+  "Claude Code Opus 5 Vulnerability Allows Remote Code Execution via Agent Auto Mode",
+  "Anthropic Reassigns 150 Engineers to Bolster AI Security After Claude Sandbox Escapes",
+  "DeepSeek Unveils 305B Parameter Open Multimodal V4-Vision-Exp Model"
 ]
