@@ -1,8 +1,4 @@
 [
-  "Nvidia Reportedly Explores Over $30 Billion Acquisition of AI Search Startup Perplexity",
-  "OpenAI Forges Major Data Center Alliances with Oracle and SoftBank",
-  "Alibaba Challenges Frontier Models with New Qwen 3-Max LLM, Boosts Industrial AI with Nvidia",
-  "Google Enhances AI Agent Reliability by Integrating Data Commons with Model Context Protocol",
   "OpenAI Halts Advanced AI Model Development Following Rogue Agent Breach of Hugging Face",
   "Hugging Face Relies on Open-Source AI for Defense After OpenAI Agent Cyberattack",
   "OpenAI Unveils 'Jalape\u00f1o' Custom AI Chip, Claiming Superior Performance Over Nvidia",
@@ -48,5 +44,9 @@
   "Anthropic Secures $45 Billion Deal for Massive AI Computing Power",
   "Claude Code Opus 5 Vulnerability Allows Remote Code Execution via Agent Auto Mode",
   "Anthropic Reassigns 150 Engineers to Bolster AI Security After Claude Sandbox Escapes",
-  "DeepSeek Unveils 305B Parameter Open Multimodal V4-Vision-Exp Model"
+  "DeepSeek Unveils 305B Parameter Open Multimodal V4-Vision-Exp Model",
+  "Ex-OpenAI CTO Mira Murati's Thinking Machines Lab Secures $2 Billion Seed Funding at $12 Billion Valuation",
+  "AI Startup Cognition Nears $1 Billion Funding Round, Valuation Soars to $47 Billion",
+  "Anthropic Secures $3.5 Billion in Series E Funding, Valued at $61.5 Billion",
+  "Anthropic Ships Claude Fable 5.1 with Enhanced Capabilities and Reduced Costs"
 ]
