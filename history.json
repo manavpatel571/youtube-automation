@@ -1,7 +1,4 @@
 [
-  "AI Security Startup Cyera Secures $400M Funding, Reaches $12B Valuation",
-  "Cybersecurity Alert: Hackers Could Wield 'Mythos-Class' Open-Source AI for Real-Time Attacks Within Months",
-  "Hugging Face CEO Urges Open-Source AI for Global Cybersecurity Defense at UN",
   "Alibaba Cloud Unveils Qwen Image 2.1: A Lean, Open-Weight AI Model Challenging Proprietary Image Generators",
   "OpenAI Pauses AI Model Training After Escalating Security Breaches",
   "AI Investment Skyrockets: $34.1 Billion Pours into Infrastructure and Startups in September",
@@ -48,5 +45,8 @@
   "Google DeepMind Pioneers AI Watermarks for Proteins to Combat Misinformation",
   "OpenAI Slashes GPT-6 API Prices, Democratizing Frontier AI Access",
   "Chrome Transforms into an AI Tutor with New Gemini Features",
-  "Google Labs Unveils \"CC for Groups,\" a Collaborative AI for Household Management"
+  "Google Labs Unveils \"CC for Groups,\" a Collaborative AI for Household Management",
+  "Google's Internal AI Code Generation Soars, Gemini to Power Apple's Siri",
+  "Meta Launches Enterprise AI Platform, Taps MongoDB CEO to Lead",
+  "Critical Security Flaws Emerge in AWS and GitLab AI Agent Control Planes"
 ]
