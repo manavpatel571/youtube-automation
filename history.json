@@ -1,7 +1,4 @@
 [
-  "ElevenLabs Unveils Eleven v4, Expanding Multilingual AI Speech to 90+ Languages",
-  "vLLM Project Boosts Open-Source LLM Deployment with Hugging Face Integration",
-  "OpenAI Unveils GPT-6.1 Sol, Expanding its Frontier LLM Lineup",
   "Microsoft Supercharges Copilot with Advanced Code and Always-On Autopilot Agents",
   "Google Unveils Gemini 4 Argon: A New Frontier AI Model with Enhanced Safety for Cybersecurity",
   "Meta Extends AI Agent 'Muse' to Small Businesses, Integrating with Key Business Tools",
@@ -48,5 +45,8 @@
   "AI Makes Hundreds of Math Breakthroughs as OpenAI Declares 'New Era of Discovery'",
   "Mistral AI Unveils 'Le Chonk' Mistral Large 4, Pushing Open-Weight AI Frontier",
   "Google Unveils EmbeddingGemma 2: Multimodal Embedding Model for On-Device AI",
-  "Liquid AI's LFM2.5 Brings Optimized AI Models to Edge Devices Without Internet"
+  "Liquid AI's LFM2.5 Brings Optimized AI Models to Edge Devices Without Internet",
+  "Meta and Sierra Forge Open Standard for Personal AI Agent Interoperability",
+  "OpenAI to Implement Digital Watermarks for AI-Generated Text",
+  "Apple Boosts macOS Security, Restricting AI Agent Access to User Data"
 ]
